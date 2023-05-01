@@ -18,7 +18,7 @@ app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 const DAY = 24 * 60 * 60 * 1000;
 const WEEK = 7 * DAY;
 
-app.get('/claim', async (req, res) => {
+app.get('/api/claim', async (req, res) => {
   let addr = req.body.address;
   let user = await UserDB.findOne({ address: addr });
   if (!user) {
@@ -45,7 +45,7 @@ app.get('/claim', async (req, res) => {
   res.send(user);
 });
 
-app.get('/claim_data', async (req, res) => {
+app.get('/api/claim_data', async (req, res) => {
   let addr = req.body.address;
   let user = await UserDB.findOne({address: addr});
   if (!user) {
