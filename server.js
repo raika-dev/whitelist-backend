@@ -1,8 +1,8 @@
-import express, { json, urlencoded } from 'express';
-import path from 'path';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import { config } from 'dotenv';
+import express, { json, urlencoded } from "express";
+import path from "path";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import { config } from "dotenv";
 import { UserDB } from "./models/User.js";
 import { connectDatabase } from "./configs/db.js";
 
@@ -11,14 +11,18 @@ config();
 const app = express();
 
 app.use(cookieParser());
-app.use(json({ limit: '50mb' }));
-app.use(urlencoded({ limit: '50mb', extended: true }));
-//app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+app.use(json({ limit: "50mb" }));
+app.use(urlencoded({ limit: "50mb", extended: true }));
+app.use(cors({
+  origin: 'https://ddog.club',
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 
 const DAY = 24 * 60 * 60 * 1000;
 const WEEK = 7 * DAY;
 
-app.get('/api/claim', async (req, res) => {
+app.post("/api/claim", async (req, res) => {
   let addr = req.body.address;
   let user = await UserDB.findOne({ address: addr });
   if (!user) {
@@ -26,7 +30,7 @@ app.get('/api/claim', async (req, res) => {
       address: addr,
       xp: 0,
       timestamps: [],
-    })
+    });
   }
 
   let now = new Date();
@@ -35,7 +39,10 @@ app.get('/api/claim', async (req, res) => {
       user.timestamps.splice(0, 1);
     } else break;
   }
-  if (user.timestamps.length && user.timestamps[user.timestamps.length - 1].getDate() == now.getDate()) {
+  if (
+    user.timestamps.length &&
+    user.timestamps[user.timestamps.length - 1].getDate() == now.getDate()
+  ) {
     res.send("already claimed");
     return;
   }
@@ -45,12 +52,12 @@ app.get('/api/claim', async (req, res) => {
   res.send(user);
 });
 
-app.get('/api/claim_data', async (req, res) => {
-  let addr = req.body.address;
-  let user = await UserDB.findOne({address: addr});
+app.get("/api/claim_data/:address", async (req, res) => {
+  let addr = req.params.address;
+  let user = await UserDB.findOne({ address: addr });
   if (!user) {
     res.send({
-      status: [],
+      status: [false, false, false, false, false, false, false],
       xp: 0,
     });
     return;
@@ -61,7 +68,7 @@ app.get('/api/claim_data', async (req, res) => {
 
   let timestamps = user.timestamps.reverse();
   for (let i = 0; i < 7; i++, cur = new Date(cur - DAY)) {
-    if (cur.getDate() == timestamps[0].getDate()) {
+    if (cur.getDate() == timestamps[0]?.getDate()) {
       status.push(true);
       timestamps.splice(0, 1);
     } else status.push(false);
@@ -73,6 +80,10 @@ app.get('/api/claim_data', async (req, res) => {
   res.send(data);
 });
 
+app.get("/api/claim", async (req, res) => {
+  let data = await UserDB.find();
+  res.send(data);
+});
 const PORT = process.env.PORT || 3001;
 
 const server = app.listen(PORT, async () => {
