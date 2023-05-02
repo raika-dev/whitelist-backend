@@ -13,7 +13,7 @@ const app = express();
 app.use(cookieParser());
 app.use(json({ limit: '50mb' }));
 app.use(urlencoded({ limit: '50mb', extended: true }));
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+//app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 
 const DAY = 24 * 60 * 60 * 1000;
 const WEEK = 7 * DAY;
